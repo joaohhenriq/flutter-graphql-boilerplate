@@ -1,7 +1,6 @@
 import 'package:app_boilerplate/components/add_task.dart';
 import 'package:app_boilerplate/components/todo_item_tile.dart';
 import 'package:app_boilerplate/data/todo_fetch.dart';
-import 'package:app_boilerplate/data/todo_list.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
@@ -28,9 +27,19 @@ class _AllState extends State<All> {
     print("All tab");
     return Column(
       children: <Widget>[
-        AddTask(
-          onAdd: (value) {
-            todoList.addTodo(value);
+        Mutation(
+          options: MutationOptions(
+            document: TodoFetch.addTodo,
+          ),
+          builder: (RunMutation runMutation, QueryResult result){
+            return AddTask(
+              onAdd: (value) {
+                runMutation({'title': value, 'isPublic': false});
+              },
+            );
+          },
+          onCompleted: (dynamic resultData){
+            refetchQuery();
           },
         ),
         Expanded(
