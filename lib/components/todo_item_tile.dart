@@ -1,16 +1,23 @@
 import 'package:app_boilerplate/model/todo_item.dart';
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 
 class TodoItemTile extends StatelessWidget {
   final TodoItem item;
   final Function delete;
-  final Function toggleIsCompleted;
+  final String toggleDocument;
+  final Map<String, dynamic> toggleRunMutation;
+  final Function refetchQuery;
+
   TodoItemTile({
     Key key,
     @required this.item,
     @required this.delete,
-    @required this.toggleIsCompleted,
+    this.refetchQuery,
+    @required this.toggleDocument,
+    @required this.toggleRunMutation
   }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -22,17 +29,47 @@ class TodoItemTile extends StatelessWidget {
                   decoration: item.isCompleted
                       ? TextDecoration.lineThrough
                       : TextDecoration.none)),
-          leading: InkWell(
-            onTap: () {
-              toggleIsCompleted();
+          leading: Mutation(
+            options: MutationOptions(document: toggleDocument),
+            builder: (RunMutation runMutation, QueryResult result){
+              return InkWell(
+                onTap: () {
+                  runMutation(
+                    toggleRunMutation,
+                    optimisticResult: {
+                      "action": {
+                        "returning": [
+                          {
+                            "is_completed": !item.isCompleted
+                          }
+                        ]
+                      }
+                    }
+                  );
+                },
+                child: Container(
+                  height: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Icon(!item.isCompleted
+                      ? Icons.radio_button_unchecked
+                      : Icons.radio_button_checked),
+                ),
+              );
             },
-            child: Container(
-              height: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: Icon(!item.isCompleted
-                  ? Icons.radio_button_unchecked
-                  : Icons.radio_button_checked),
-            ),
+            update: (Cache cache, QueryResult result){
+              if(result.hasErrors){
+                print(result.errors);
+              } else {
+                final Map<String, Object> updated =
+                    Map<String,Object>.from(item.toJson())..addAll(extractTodoData(result.data));
+                cache.write(typenameDataIdFromObject(updated), updated);
+              }
+
+              return cache;
+            },
+            onCompleted: (onValue){
+              refetchQuery();
+            },
           ),
           trailing: InkWell(
             onTap: () {
@@ -48,5 +85,17 @@ class TodoItemTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Map<String, Object> extractTodoData(Object data){
+    final Map<String, Object> returning =
+      (data as Map<String, Object>)['action'] as Map<String, Object>;
+
+    if(returning == null){
+      return null;
+    }
+
+    List<Object> list = returning['returning'];
+    return list[0] as Map<String, Object>;
   }
 }

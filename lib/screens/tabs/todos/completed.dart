@@ -31,11 +31,6 @@ class _CompletedState extends State<Completed> {
                     todoList.removeTodo(todoList.completeList[index].id);
                   });
                 },
-                toggleIsCompleted: () {
-                  setState(() {
-                    todoList.toggleList(todoList.completeList[index].id);
-                  });
-                },
               );
             },
           ),
