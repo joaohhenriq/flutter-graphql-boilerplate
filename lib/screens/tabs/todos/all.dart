@@ -68,11 +68,10 @@ class _AllState extends State<All> {
                       responseData["title"],
                       responseData["is_completed"],
                     ),
-                    delete: () {
-
-                    },
                     toggleDocument: TodoFetch.toggleTodo,
                     toggleRunMutation: {'id': responseData["id"], 'isCompleted': !responseData["is_completed"]},
+                    deleteDocument: TodoFetch.deleteTodo,
+                    deleteRunMutation: {'id': responseData["id"]},
                     refetchQuery: refetchQuery,
                   );
                 },

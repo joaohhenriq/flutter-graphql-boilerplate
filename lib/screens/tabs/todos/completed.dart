@@ -26,11 +26,6 @@ class _CompletedState extends State<Completed> {
             itemBuilder: (context, index) {
               return TodoItemTile(
                 item: todoList.completeList[index],
-                delete: () {
-                  setState(() {
-                    todoList.removeTodo(todoList.completeList[index].id);
-                  });
-                },
               );
             },
           ),

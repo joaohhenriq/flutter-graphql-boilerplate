@@ -26,11 +26,6 @@ class _ActiveState extends State<Active> {
             itemBuilder: (context, index) {
               return TodoItemTile(
                 item: todoList.activeList[index],
-                delete: () {
-                  setState(() {
-                    todoList.removeTodo(todoList.activeList[index].id);
-                  });
-                },
               );
             },
           ),

@@ -4,18 +4,20 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 class TodoItemTile extends StatelessWidget {
   final TodoItem item;
-  final Function delete;
   final String toggleDocument;
   final Map<String, dynamic> toggleRunMutation;
+  final String deleteDocument;
+  final Map<String, dynamic> deleteRunMutation;
   final Function refetchQuery;
 
   TodoItemTile({
     Key key,
     @required this.item,
-    @required this.delete,
     this.refetchQuery,
     @required this.toggleDocument,
-    @required this.toggleRunMutation
+    @required this.toggleRunMutation,
+    @required this.deleteDocument,
+    @required this.deleteRunMutation,
   }) : super(key: key);
 
   @override
@@ -71,16 +73,24 @@ class TodoItemTile extends StatelessWidget {
               refetchQuery();
             },
           ),
-          trailing: InkWell(
-            onTap: () {
-              delete();
+          trailing: Mutation(
+            options: MutationOptions(document: deleteDocument),
+            builder: (RunMutation runMutation, QueryResult result){
+              return InkWell(
+                onTap: () {
+                  runMutation(deleteRunMutation);
+                },
+                child: Container(
+                    decoration: BoxDecoration(
+                        border: Border(left: BorderSide(color: Colors.grey))),
+                    width: 60,
+                    height: double.infinity,
+                    child: Icon(Icons.delete)),
+              );
             },
-            child: Container(
-                decoration: BoxDecoration(
-                    border: Border(left: BorderSide(color: Colors.grey))),
-                width: 60,
-                height: double.infinity,
-                child: Icon(Icons.delete)),
+            onCompleted: (onValue){
+              refetchQuery();
+            },
           ),
         ),
       ),
